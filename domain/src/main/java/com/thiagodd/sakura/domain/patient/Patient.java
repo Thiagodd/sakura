@@ -210,4 +210,13 @@ public class Patient extends AggregateRoot<PatientID> implements Cloneable {
     public Instant getDeletedAt() {
         return deletedAt;
     }
+
+    @Override
+    public Patient clone(){
+        try{
+            return (Patient) super.clone();
+        }catch (CloneNotSupportedException exception){
+            throw new AssertionError();
+        }
+    }
 }
