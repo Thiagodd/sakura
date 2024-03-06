@@ -4,13 +4,17 @@ import com.thiagodd.sakura.domain.validation.Error;
 import com.thiagodd.sakura.domain.validation.ValidationHandler;
 import com.thiagodd.sakura.domain.validation.Validator;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PatientValidator extends Validator {
 
-    private static final int ATTRIBUTE_MAX_LENGTH = 255;
-    private static final int ATTRIBUTE_MIN_LENGTH = 3;
-    private static final String EMAIL_PATTERN = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@" + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+    private static final int NAME_MAX_LENGTH = 255;
+    private static final int NAME_MIN_LENGTH = 3;
+    private static final int EMAIL_MAX_LENGTH = 255;
+    private static final int EMAIL_MIN_LENGTH = 3;
+    private static final String EMAIL_REGEX = "(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])";
+
 
     private Patient patient;
 
@@ -26,45 +30,21 @@ public class PatientValidator extends Validator {
     }
 
     private void checkNameConstraints() {
-        final var name = this.patient.getName();
-        IsNullValidate(name, "'name' should not be null");
-        IsBlankValidate(name, "'name' should not be empty");
-        isValidLengthValidate(name, "'name' must be between 3 and 255 characters");
+        validateField("name", patient.getName(), NAME_MIN_LENGTH, NAME_MAX_LENGTH);
     }
 
     private void checkEmailConstraints() {
-        final var email = this.patient.getEmail();
-        IsNullValidate(email, "'email' should not be null");
-        IsBlankValidate(email, "'email' should not be empty");
-        isValidEmailTemplate(email, "'email' is an invalid format");
-        isValidLengthValidate(email, "'email' must be between 3 and 255 characters");
+        validateField("email", patient.getEmail(), EMAIL_MIN_LENGTH, EMAIL_MAX_LENGTH);
+        validateEmailField();
     }
 
-    private void isValidLengthValidate(String email, String message) {
-        final int length = email.trim().length();
-        if (length > ATTRIBUTE_MAX_LENGTH || length < ATTRIBUTE_MIN_LENGTH) {
-            this.validationHandler().append(new Error(message));
-        }
-    }
+    private void validateEmailField() {
+        final var email = patient.getEmail();
+        Pattern pattern = Pattern.compile(EMAIL_REGEX, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(email);
 
-    private void isValidEmailTemplate(final String email, final String message) {
-        final var pattern = Pattern.compile(EMAIL_PATTERN);
-        final var matcher = pattern.matcher(email);
-
-        if (matcher.matches()){
-            this.validationHandler().append(new Error(message));
-        }
-    }
-
-    private void IsNullValidate(final String attribute, final String message) {
-        if (attribute == null) {
-            this.validationHandler().append(new Error(message));
-        }
-    }
-
-    private void IsBlankValidate(final String attribute, final String message){
-        if(attribute.isBlank()){
-            this.validationHandler().append(new Error(message));
+        if (!matcher.matches()) {
+            this.validationHandler().append(new Error("'email' is in an invalid format"));
         }
     }
 }

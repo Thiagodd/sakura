@@ -24,7 +24,7 @@ public class PatientID extends Identifier {
     }
 
     public static PatientID from(final UUID id){
-        return new PatientID(id.toString().toLowerCase());
+        return PatientID.from(id.toString());
     }
 
     @Override
@@ -36,7 +36,7 @@ public class PatientID extends Identifier {
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        final PatientID that = (PatientID) o;
+        final var that = (PatientID) o;
         return Objects.equals(getValue(), that.getValue());
     }
 
