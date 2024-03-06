@@ -1,6 +1,7 @@
 package com.thiagodd.sakura.domain.patient;
 
 import com.thiagodd.sakura.domain.AggregateRoot;
+import com.thiagodd.sakura.domain.validation.ValidationHandler;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -59,7 +60,8 @@ public class Patient extends AggregateRoot<PatientID> implements Cloneable {
         final var now = Instant.now();
         final var deletedAt = isActive ? null : now;
 
-        return new Patient(id,
+        return new Patient(
+            id,
             name,
             socialName,
             dateOfBirth,
@@ -114,6 +116,11 @@ public class Patient extends AggregateRoot<PatientID> implements Cloneable {
             patient.updatedAt,
             patient.deletedAt
         );
+    }
+
+    @Override
+    public void validate(ValidationHandler handler){
+        new PatientValidator(this, handler).validate();
     }
 
     public Patient activate() {
